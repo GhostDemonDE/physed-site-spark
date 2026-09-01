@@ -12,10 +12,4 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  // Fastmail is static hosting: prerender the home page to a real index.html.
-  nitro: {
-    prerender: {
-      routes: ["/"],
-    },
-  },
 });
