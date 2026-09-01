@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Beer, Dice5, Moon, Music4, Sun } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Beer, Dice5, Music4 } from "lucide-react";
 import familyPhoto from "@/assets/family.jpg";
+import { useSitePrefs } from "@/hooks/use-site-prefs";
+import { LangThemeToggle } from "@/components/lang-theme-toggle";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -24,12 +25,11 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-type Lang = "ru" | "en";
 
 const copy = {
   ru: {
     nav: { about: "О нас", doing: "Чем живём", links: "Ссылки" },
-    kicker: "Мюнхен · с 2010",
+    kicker: "Мюнхен · с 2013",
     title: "Семья Диденко-Чередниченко",
     people: "Ирина Диденко · Дмитрий Чередниченко · Константин Диденко",
     lead: "Семья из двух разнополых программистов (Java и .NET) и ребёнка.",
@@ -74,7 +74,7 @@ const copy = {
   },
   en: {
     nav: { about: "About", doing: "What we do", links: "Links" },
-    kicker: "Munich · since 2010",
+    kicker: "Munich · since 2013",
     title: "The Didenko-Cherednichenko Family",
     people: "Irina Didenko · Dmitry Cherednichenko · Konstantin Didenko",
     lead: "A family of two programmers (Java and .NET) and one kid.",
@@ -120,33 +120,8 @@ const copy = {
 } as const;
 
 function Index() {
-  const [lang, setLang] = useState<Lang>("ru");
-  const [dark, setDark] = useState(false);
+  const { lang, dark, switchLang, toggleTheme } = useSitePrefs();
   const t = copy[lang];
-
-  useEffect(() => {
-    const stored = localStorage.getItem("dcf-theme");
-    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(stored ? stored === "dark" : prefers);
-    const storedLang = localStorage.getItem("dcf-lang");
-    if (storedLang === "en" || storedLang === "ru") setLang(storedLang);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
-
-  const toggleTheme = () => {
-    setDark((d) => {
-      localStorage.setItem("dcf-theme", d ? "light" : "dark");
-      return !d;
-    });
-  };
-
-  const switchLang = (next: Lang) => {
-    setLang(next);
-    localStorage.setItem("dcf-lang", next);
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -163,28 +138,7 @@ function Index() {
               {t.nav.doing}
             </a>
           </nav>
-          <div className="flex overflow-hidden rounded-full border border-border text-xs font-medium">
-            {(["ru", "en"] as const).map((l) => (
-              <button
-                key={l}
-                onClick={() => switchLang(l)}
-                className={`px-3 py-1.5 uppercase transition-colors ${
-                  lang === l
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={toggleTheme}
-            aria-label="theme"
-            className="rounded-full border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          <LangThemeToggle lang={lang} dark={dark} switchLang={switchLang} toggleTheme={toggleTheme} />
         </div>
       </header>
 
@@ -243,16 +197,27 @@ function Index() {
                   <h3 className="text-lg font-semibold">{card.title}</h3>
                   <p className="mt-2 flex-1 text-sm text-muted-foreground">{card.text}</p>
                   <ul className="mt-5 space-y-1.5 text-sm">
-                    {card.links.map((l) => (
-                      <li key={l.href}>
-                        <a
-                          href={l.href}
-                          className="font-medium text-primary underline-offset-4 hover:underline"
-                        >
-                          {l.label} →
-                        </a>
-                      </li>
-                    ))}
+                    {card.links.map((l) =>
+                      l.href === "/geistbrau" ? (
+                        <li key={l.href}>
+                          <Link
+                            to="/geistbrau"
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            {l.label} →
+                          </Link>
+                        </li>
+                      ) : (
+                        <li key={l.href}>
+                          <a
+                            href={l.href}
+                            className="font-medium text-primary underline-offset-4 hover:underline"
+                          >
+                            {l.label} →
+                          </a>
+                        </li>
+                      ),
+                    )}
                   </ul>
                 </article>
               );
