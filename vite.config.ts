@@ -11,16 +11,11 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-    // Prerender the home page to static HTML so the site can be hosted on
-    // Fastmail / any static host without a backend runtime.
-    pages: [
-      {
-        path: "/",
-        prerender: {
-          enabled: true,
-          outputPath: "/index.html",
-        },
-      },
-    ],
+  },
+  // Fastmail is static hosting: prerender the home page to a real index.html.
+  nitro: {
+    prerender: {
+      routes: ["/"],
+    },
   },
 });
