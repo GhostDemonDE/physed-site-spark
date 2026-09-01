@@ -1,6 +1,7 @@
 import { readdir, writeFile, mkdir, cp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { getSiteBasePath } from "../site-base-path.mjs";
 
 const SSR_DIR = ".output/server/_ssr";
 
@@ -51,9 +52,10 @@ async function main() {
   const entryUrl = pathToFileURL(entryPath).href;
   const { default: server } = await import(entryUrl);
 
-  // Must match `SITE_BASE_PATH` / `tanstackStart.router.basepath` in vite.config.ts,
-  // otherwise the server redirects (307) instead of rendering the page.
-  const basePath = (process.env["SITE_BASE_PATH"] ?? "/new/dist").replace(/\/+$/, "");
+  // Must match `tanstackStart.router.basepath` in vite.config.ts (both derive
+  // from the same getSiteBasePath()), otherwise the server 307-redirects
+  // instead of rendering the page.
+  const basePath = getSiteBasePath();
 
   for (const route of ROUTES) {
     await prerenderRoute(server, basePath, route);
